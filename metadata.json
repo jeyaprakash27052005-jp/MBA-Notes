@@ -1,0 +1,6 @@
+{
+  "name": "MBA Notes",
+  "description": "Comprehensive Mobile & Web Academic Portal for MBA Department with role-based dashboards for HOD, Teachers, and Students, batch management, assignments, period timetables, and notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

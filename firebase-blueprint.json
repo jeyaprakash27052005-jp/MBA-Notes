@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for HOD, Teacher, or Student with role and credentials info",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["hod", "teacher", "student"] },
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "batchId": { "type": "string", "maxLength": 100 },
+        "address": { "type": "string", "maxLength": 300 },
+        "photoUrl": { "type": "string", "maxLength": 2048 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "department": { "type": "string", "maxLength": 100 },
+        "mustChangePassword": { "type": "boolean" },
+        "passwordHash": { "type": "string", "maxLength": 256 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["userId", "role", "name"]
+    },
+    "Batch": {
+      "title": "Batch",
+      "description": "Academic MBA Batch details",
+      "type": "object",
+      "properties": {
+        "batchId": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 100 },
+        "year": { "type": "string", "maxLength": 50 },
+        "studentCount": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["batchId", "name", "year"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Course assignments created by HOD or Teachers",
+      "type": "object",
+      "properties": {
+        "assignmentId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 150 },
+        "batchId": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 4000 },
+        "givenDate": { "type": "string", "maxLength": 50 },
+        "dueDate": { "type": "string", "maxLength": 50 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdByName": { "type": "string", "maxLength": 150 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["assignmentId", "title", "subject", "batchId", "givenDate", "dueDate", "createdBy"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student assignment submission record and status",
+      "type": "object",
+      "properties": {
+        "submissionId": { "type": "string", "maxLength": 128 },
+        "assignmentId": { "type": "string", "maxLength": 128 },
+        "studentId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 150 },
+        "batchId": { "type": "string", "maxLength": 100 },
+        "submittedDate": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["Submitted", "Pending", "Late"] },
+        "remarks": { "type": "string", "maxLength": 1000 },
+        "fileUrl": { "type": "string", "maxLength": 2048 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["submissionId", "assignmentId", "studentId", "status"]
+    },
+    "Timetable": {
+      "title": "Timetable",
+      "description": "MBA class period schedule entry",
+      "type": "object",
+      "properties": {
+        "timetableId": { "type": "string", "maxLength": 128 },
+        "batchId": { "type": "string", "maxLength": 100 },
+        "day": { "type": "string", "maxLength": 20 },
+        "periodNo": { "type": "number" },
+        "time": { "type": "string", "maxLength": 60 },
+        "subject": { "type": "string", "maxLength": 150 },
+        "teacherId": { "type": "string", "maxLength": 128 },
+        "teacherName": { "type": "string", "maxLength": 150 }
+      },
+      "required": ["timetableId", "batchId", "day", "periodNo", "time", "subject"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "Course study material and lecture notes",
+      "type": "object",
+      "properties": {
+        "noteId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 150 },
+        "batchId": { "type": "string", "maxLength": 100 },
+        "fileType": { "type": "string", "enum": ["pdf", "pptx", "docx", "xlsx"] },
+        "fileUrl": { "type": "string", "maxLength": 2048 },
+        "fileSize": { "type": "number" },
+        "uploadedBy": { "type": "string", "maxLength": 128 },
+        "uploadedByName": { "type": "string", "maxLength": 150 },
+        "uploadDate": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["noteId", "title", "subject", "batchId", "fileType", "fileUrl", "uploadedBy"]
+    },
+    "AdminDoc": {
+      "title": "AdminDoc",
+      "description": "Bootstrap Admin pointer",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["hod"] }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Master student, teacher, and HOD accounts"
+    },
+    "/batches/{batchId}": {
+      "schema": { "$ref": "#/entities/Batch" },
+      "description": "Academic batches"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/Assignment" },
+      "description": "Academic assignments"
+    },
+    "/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/Submission" },
+      "description": "Assignment submissions"
+    },
+    "/timetable/{timetableId}": {
+      "schema": { "$ref": "#/entities/Timetable" },
+      "description": "Period timetable entries"
+    },
+    "/notes/{noteId}": {
+      "schema": { "$ref": "#/entities/Note" },
+      "description": "MBA lecture notes and files"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminDoc" },
+      "description": "System admin mapping"
+    }
+  }
+}
