@@ -1,7 +1,7 @@
 import { writeBatch, doc, getDoc } from 'firebase/firestore';
 import { db } from './config';
 import { Batch, UserProfile, Assignment, Submission, TimetableEntry, Note } from '../types';
-import { hashPassword } from './services';
+import { hashPassword } from './utils';
 
 export const INITIAL_BATCHES: Batch[] = [
   {

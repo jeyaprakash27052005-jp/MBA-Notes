@@ -24,6 +24,9 @@ import {
   INITIAL_TIMETABLE,
   INITIAL_NOTES,
 } from './seed';
+import { userIdToEmail, hashPassword } from './utils';
+
+export { userIdToEmail, hashPassword };
 
 // Memory caches to ensure instant responsive UX even if Firestore is syncing
 let cachedUsers: UserProfile[] = [...INITIAL_USERS];
@@ -32,21 +35,6 @@ let cachedAssignments: Assignment[] = [...INITIAL_ASSIGNMENTS];
 let cachedSubmissions: Submission[] = [...INITIAL_SUBMISSIONS];
 let cachedTimetable: TimetableEntry[] = [...INITIAL_TIMETABLE];
 let cachedNotes: Note[] = [...INITIAL_NOTES];
-
-export function userIdToEmail(userId: string): string {
-  const cleanId = userId.trim().toLowerCase();
-  return `${cleanId}@mbanotes.app`;
-}
-
-export function hashPassword(password: string): string {
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  return `hash_${Math.abs(hash).toString(36)}`;
-}
 
 // ----------------------------------------------------
 // BATCH SERVICES
