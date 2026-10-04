@@ -32,6 +32,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         { id: 'assignments', label: 'Assignments', icon: FileCheck },
         { id: 'timetable', label: 'Timetable', icon: CalendarDays },
         { id: 'notes', label: 'Notes', icon: FileText },
+        { id: 'profile', label: 'Profile', icon: User },
       ];
     } else if (role === 'teacher') {
       return [

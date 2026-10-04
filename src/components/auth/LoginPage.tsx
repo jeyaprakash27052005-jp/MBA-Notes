@@ -13,11 +13,7 @@ import {
   LogIn,
 } from 'lucide-react';
 
-interface LoginPageProps {
-  onOpenApkGuide: () => void;
-}
-
-export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
+export const LoginPage: React.FC = () => {
   const { login, loginWithGoogle } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [userId, setUserId] = useState('');
@@ -29,17 +25,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
 
   const handleRoleChange = (role: UserRole) => {
     setSelectedRole(role);
-    setError('');
-    // Auto-fill default ID suggestion for convenience
-    if (role === 'student' && !userId) setUserId('25MBA01');
-    if (role === 'teacher' && !userId) setUserId('TCH01');
-    if (role === 'hod' && !userId) setUserId('HOD01');
-  };
-
-  const handleQuickFill = (role: UserRole, id: string) => {
-    setSelectedRole(role);
-    setUserId(id);
-    setPassword(id);
     setError('');
   };
 
@@ -68,7 +53,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 flex flex-col justify-between text-slate-100 p-4 sm:p-6">
-      {/* Top Banner & APK Guide Link */}
+      {/* Top Banner */}
       <div className="max-w-5xl mx-auto w-full flex items-center justify-between py-2">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
@@ -80,13 +65,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
           </div>
         </div>
 
-        <button
-          onClick={onOpenApkGuide}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-blue-300 border border-slate-700 flex items-center gap-1.5 transition-colors"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>APK & Deploy Guide</span>
-        </button>
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="hidden sm:inline">Online Cloud Database</span>
+        </div>
       </div>
 
       {/* Main Login Card */}
@@ -146,38 +128,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
           </div>
         </div>
 
-        {/* Quick Demo Credentials */}
-        <div className="mb-5 p-3 rounded-2xl bg-blue-50/80 border border-blue-100">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-bold text-blue-900 flex items-center gap-1">
-              <Info className="w-3.5 h-3.5 text-blue-600" />
-              1-Click Demo Login
-            </span>
-            <span className="text-[10px] text-blue-600 font-medium">Password = User ID</span>
+        {/* Role Format Guidance */}
+        <div className="mb-5 p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-xs shadow-2xs">
+          <div className="flex items-center gap-1.5 text-blue-900 font-bold mb-1.5">
+            <Info className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Default Rule: Password = User ID</span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('student', '25MBA01')}
-              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100 transition-colors shadow-2xs"
-            >
-              Student: <span className="font-mono font-bold">25MBA01</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('teacher', 'TCH01')}
-              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100 transition-colors shadow-2xs"
-            >
-              Teacher: <span className="font-mono font-bold">TCH01</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('hod', 'HOD01')}
-              className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white border border-blue-200 text-blue-800 hover:bg-blue-100 transition-colors shadow-2xs"
-            >
-              HOD Admin: <span className="font-mono font-bold">HOD01</span>
-            </button>
+          <div className="space-y-1 text-[11px] text-blue-950 font-medium">
+            <div className="flex justify-between items-center py-0.5 border-b border-blue-200/60">
+              <span className="text-blue-800">Student Roll No:</span>
+              <span className="font-mono font-bold bg-white/80 px-2 py-0.5 rounded text-blue-900">25MBA01</span>
+            </div>
+            <div className="flex justify-between items-center py-0.5 border-b border-blue-200/60">
+              <span className="text-blue-800">Teacher Staff ID:</span>
+              <span className="font-mono font-bold bg-white/80 px-2 py-0.5 rounded text-blue-900">TCH01</span>
+            </div>
+            <div className="flex justify-between items-center py-0.5">
+              <span className="text-blue-800">HOD Admin ID:</span>
+              <span className="font-mono font-bold bg-white/80 px-2 py-0.5 rounded text-blue-900">HOD01</span>
+            </div>
           </div>
+          <p className="text-[10px] text-blue-700/80 mt-1.5 text-center italic">
+            Password is identical to your assigned User ID upon login.
+          </p>
         </div>
 
         {/* Error Alert */}
@@ -248,9 +221,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOpenApkGuide }) => {
               />
               <span>Remember login (stay signed in)</span>
             </label>
-            <span className="text-[11px] text-blue-600 font-semibold hover:underline cursor-pointer" onClick={() => setPassword(userId)}>
-              Default: ID = Pass
-            </span>
           </div>
 
           <button

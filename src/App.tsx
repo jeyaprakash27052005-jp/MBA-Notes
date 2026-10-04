@@ -7,7 +7,7 @@ import { HodDashboard } from './components/hod/HodDashboard';
 import { TeacherDashboard } from './components/teacher/TeacherDashboard';
 import { StudentDashboard } from './components/student/StudentDashboard';
 import { ChangePasswordModal } from './components/auth/ChangePasswordModal';
-import { ApkGuideModal } from './components/common/ApkGuideModal';
+import { ProfileEditModal } from './components/common/ProfileEditModal';
 import { ToastContainer, ToastMessage } from './components/common/Toast';
 import { GraduationCap, Wifi, Battery, Signal } from 'lucide-react';
 
@@ -21,8 +21,8 @@ function MainApp() {
   const [isMobileFrame, setIsMobileFrame] = useState<boolean>(false);
 
   // Modals
-  const [showApkModal, setShowApkModal] = useState<boolean>(false);
   const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -56,8 +56,7 @@ function MainApp() {
   if (!currentUser || !role) {
     return (
       <>
-        <LoginPage onOpenApkGuide={() => setShowApkModal(true)} />
-        <ApkGuideModal isOpen={showApkModal} onClose={() => setShowApkModal(false)} />
+        <LoginPage />
         <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
       </>
     );
@@ -72,6 +71,8 @@ function MainApp() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             showToast={showToast}
+            onOpenProfileModal={() => setShowProfileModal(true)}
+            onOpenChangePassword={() => setShowPasswordModal(true)}
           />
         );
       case 'teacher':
@@ -80,6 +81,8 @@ function MainApp() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             showToast={showToast}
+            onOpenProfileModal={() => setShowProfileModal(true)}
+            onOpenChangePassword={() => setShowPasswordModal(true)}
           />
         );
       case 'student':
@@ -88,6 +91,7 @@ function MainApp() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             showToast={showToast}
+            onOpenProfileModal={() => setShowProfileModal(true)}
             onOpenChangePassword={() => setShowPasswordModal(true)}
           />
         );
@@ -116,8 +120,8 @@ function MainApp() {
           <Header
             isMobileFrame={isMobileFrame}
             onToggleFrame={setIsMobileFrame}
-            onOpenApkModal={() => setShowApkModal(true)}
             onOpenPasswordModal={() => setShowPasswordModal(true)}
+            onOpenProfileModal={() => setShowProfileModal(true)}
           />
 
           {/* Scrollable Mobile Body */}
@@ -141,8 +145,8 @@ function MainApp() {
           <Header
             isMobileFrame={isMobileFrame}
             onToggleFrame={setIsMobileFrame}
-            onOpenApkModal={() => setShowApkModal(true)}
             onOpenPasswordModal={() => setShowPasswordModal(true)}
+            onOpenProfileModal={() => setShowProfileModal(true)}
           />
 
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
@@ -165,10 +169,11 @@ function MainApp() {
         isFirstLoginPrompt={currentUser.mustChangePassword}
       />
 
-      {/* APK & Deployment Modal */}
-      <ApkGuideModal
-        isOpen={showApkModal}
-        onClose={() => setShowApkModal(false)}
+      {/* Profile Edit Modal */}
+      <ProfileEditModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        onSaved={() => showToast('success', 'Profile updated successfully!')}
       />
 
       {/* Toast Notifications */}

@@ -54,19 +54,29 @@ import {
   Presentation,
   BookOpen,
   Filter,
+  UserCheck,
+  KeyRound,
+  Shield,
+  User,
 } from 'lucide-react';
 import { ConfirmModal } from '../common/Toast';
+import { downloadNoteFile } from '../../utils/fileDownloader';
+import { NotePreviewModal } from '../common/NotePreviewModal';
 
 interface HodDashboardProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   showToast: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
+  onOpenProfileModal?: () => void;
+  onOpenChangePassword?: () => void;
 }
 
 export const HodDashboard: React.FC<HodDashboardProps> = ({
   activeTab,
   setActiveTab,
   showToast,
+  onOpenProfileModal,
+  onOpenChangePassword,
 }) => {
   const { currentUser } = useAuth();
 
@@ -78,6 +88,7 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewNote, setPreviewNote] = useState<Note | null>(null);
 
   // Filters & Search
   const [studentSearch, setStudentSearch] = useState('');
@@ -589,10 +600,14 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
     try {
       const nId = noteForm.noteId || `NOTE-${Date.now().toString().slice(-6)}`;
 
-      // Generate a mock download data URL if local file is uploaded for instant student preview
-      let generatedUrl = noteForm.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+      let generatedUrl = noteForm.fileUrl || '';
       if (selectedFile) {
-        generatedUrl = `https://storage.mbanotes.app/materials/${nId}-${selectedFile.name}`;
+        generatedUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(selectedFile);
+        });
       }
 
       const note: Note = {
@@ -683,6 +698,7 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
             { id: 'assignments', label: 'Assignments', icon: FileCheck },
             { id: 'timetable', label: 'Timetable', icon: CalendarDays },
             { id: 'notes', label: 'Notes', icon: FileText },
+            { id: 'profile', label: 'My Profile', icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1756,15 +1772,24 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <a
-                    href={note.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download / Open</span>
-                  </a>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewNote(note)}
+                      className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      Preview
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => downloadNoteFile(note)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
+                      title="Download directly to your device"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download</span>
+                    </button>
+                  </div>
 
                   <div className="flex items-center gap-1">
                     <button
@@ -2455,6 +2480,126 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
         </div>
       )}
 
+      {/* TAB 8: HOD PROFILE */}
+      {activeTab === 'profile' && (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-tr from-amber-600 to-amber-700 text-white font-black text-2xl flex items-center justify-center shadow-lg ring-4 ring-amber-100 shrink-0">
+                {currentUser?.photoUrl ? (
+                  <img
+                    src={currentUser.photoUrl}
+                    alt={currentUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{currentUser?.name?.substring(0, 2).toUpperCase() || 'HD'}</span>
+                )}
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 rounded-md border border-amber-300">
+                      Head of Department (Admin)
+                    </span>
+                    <h3 className="text-xl font-bold text-slate-900 mt-1">{currentUser?.name}</h3>
+                  </div>
+                  {onOpenProfileModal && (
+                    <button
+                      onClick={onOpenProfileModal}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer self-center sm:self-start"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      <span>Update Profile</span>
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Department Head & Academic Administrator • Full Authority
+                </p>
+                <p className="font-mono text-xs font-semibold text-blue-600 mt-0.5">
+                  Admin User ID: {currentUser?.userId}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-medium">Department</span>
+                <p className="font-bold text-slate-800 text-sm mt-0.5">
+                  {currentUser?.department || 'Department of Management Studies'}
+                </p>
+              </div>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-medium">Email Address</span>
+                <p className="font-bold text-slate-800 text-sm mt-0.5">
+                  {currentUser?.email || 'hod@mbanotes.app'}
+                </p>
+              </div>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-medium">Phone Number</span>
+                <p className="font-bold text-slate-800 text-sm mt-0.5">
+                  {currentUser?.phone || '+91 98450 12345'}
+                </p>
+              </div>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-medium">Office / Chamber</span>
+                <p className="font-bold text-slate-800 text-sm mt-0.5">
+                  {currentUser?.address || 'Dean Office, Management Block A'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center gap-3">
+              {onOpenProfileModal && (
+                <button
+                  onClick={onOpenProfileModal}
+                  className="w-full sm:w-auto flex-1 py-2.5 px-4 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span>Update Profile Information</span>
+                </button>
+              )}
+              {onOpenChangePassword && (
+                <button
+                  onClick={onOpenChangePassword}
+                  className="w-full sm:w-auto flex-1 py-2.5 px-4 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Change Password</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Department Control Overview */}
+          <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl space-y-4">
+            <h4 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+              <Shield className="w-4 h-4 text-blue-400" />
+              <span>Administrative Scope & Online Cloud Firestore Metrics</span>
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-xl font-black text-blue-400">{batches.length}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Batches</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-xl font-black text-indigo-400">{students.length}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Students</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-xl font-black text-purple-400">{teachers.length}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Faculty</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-xl font-black text-emerald-400">{notes.length}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Notes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteConfirm.isOpen}
@@ -2462,6 +2607,12 @@ export const HodDashboard: React.FC<HodDashboardProps> = ({
         message={deleteConfirm.message}
         onConfirm={deleteConfirm.onConfirm}
         onCancel={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Note Preview & Direct Download Modal */}
+      <NotePreviewModal
+        note={previewNote}
+        onClose={() => setPreviewNote(null)}
       />
     </div>
   );

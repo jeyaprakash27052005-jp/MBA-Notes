@@ -1,20 +1,20 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { GraduationCap, LogOut, KeyRound, Download, Smartphone } from 'lucide-react';
+import { GraduationCap, LogOut, KeyRound, UserCheck } from 'lucide-react';
 import { DeviceFrameToggle } from './DeviceFrameToggle';
 
 interface HeaderProps {
   isMobileFrame: boolean;
   onToggleFrame: (val: boolean) => void;
-  onOpenApkModal: () => void;
   onOpenPasswordModal: () => void;
+  onOpenProfileModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   isMobileFrame,
   onToggleFrame,
-  onOpenApkModal,
   onOpenPasswordModal,
+  onOpenProfileModal,
 }) => {
   const { currentUser, role, logout } = useAuth();
 
@@ -74,21 +74,20 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
 
-          {/* APK Guide Button */}
+          {/* Edit Profile button */}
           <button
-            onClick={onOpenApkModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-200 transition-all hover:text-white"
-            title="Download APK / Export mobile app instructions"
+            onClick={onOpenProfileModal}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Update Your Profile Information"
           >
-            <Download className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden sm:inline">APK & Deploy</span>
-            <span className="sm:hidden">APK</span>
+            <UserCheck className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">Profile</span>
           </button>
 
           {/* Change password button */}
           <button
             onClick={onOpenPasswordModal}
-            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5"
+            className="p-1.5 sm:px-2.5 sm:py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
             title="Change Account Password"
           >
             <KeyRound className="w-3.5 h-3.5 text-amber-400" />
@@ -97,8 +96,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Current user chip */}
           {currentUser && (
-            <div className="flex items-center gap-2 pl-1 sm:pl-2 border-l border-slate-800">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-700 ring-1 ring-slate-600 shrink-0">
+            <button
+              onClick={onOpenProfileModal}
+              className="flex items-center gap-2 pl-1 sm:pl-2 border-l border-slate-800 text-left hover:opacity-80 transition-opacity cursor-pointer group"
+              title="Click to edit your profile"
+            >
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-700 ring-1 ring-slate-600 shrink-0 group-hover:ring-blue-400 transition-all">
                 {currentUser.photoUrl ? (
                   <img
                     src={currentUser.photoUrl}
@@ -112,14 +115,14 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-xs font-semibold text-slate-100 leading-tight truncate max-w-[130px]">
+                <p className="text-xs font-semibold text-slate-100 leading-tight truncate max-w-[130px] group-hover:text-blue-300">
                   {currentUser.name}
                 </p>
                 <p className="text-[10px] font-mono text-slate-400">
                   {currentUser.userId}
                 </p>
               </div>
-            </div>
+            </button>
           )}
 
           {/* Logout */}

@@ -42,19 +42,27 @@ import {
   BookOpen,
   FileQuestion,
   Filter,
+  UserCheck,
+  KeyRound,
 } from 'lucide-react';
 import { ConfirmModal } from '../common/Toast';
+import { downloadNoteFile } from '../../utils/fileDownloader';
+import { NotePreviewModal } from '../common/NotePreviewModal';
 
 interface TeacherDashboardProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   showToast: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
+  onOpenProfileModal?: () => void;
+  onOpenChangePassword?: () => void;
 }
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   activeTab,
   setActiveTab,
   showToast,
+  onOpenProfileModal,
+  onOpenChangePassword,
 }) => {
   const { currentUser } = useAuth();
 
@@ -65,6 +73,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [myTimetable, setMyTimetable] = useState<TimetableEntry[]>([]);
   const [myNotes, setMyNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewNote, setPreviewNote] = useState<Note | null>(null);
 
   // Filters
   const [selectedBatchFilter, setSelectedBatchFilter] = useState('all');
@@ -209,9 +218,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
     try {
       const nId = noteForm.noteId || `NOTE-TCH-${Date.now().toString().slice(-6)}`;
-      let downloadUrl = noteForm.fileUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+      let downloadUrl = noteForm.fileUrl || '';
       if (selectedFile) {
-        downloadUrl = `https://storage.mbanotes.app/materials/${nId}-${selectedFile.name}`;
+        downloadUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(selectedFile);
+        });
       }
 
       const note: Note = {
@@ -567,15 +581,24 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <a
-                      href={note.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Download</span>
-                    </a>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewNote(note)}
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadNoteFile(note)}
+                        className="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer"
+                        title="Download file directly"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download</span>
+                      </button>
+                    </div>
 
                     <div className="flex items-center gap-1">
                       <button
@@ -966,22 +989,47 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
       {/* TAB 6: PROFILE */}
       {activeTab === 'profile' && (
-        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-700 font-black text-xl flex items-center justify-center shadow-md">
-              {currentUser?.name.substring(0, 2)}
+        <div className="max-w-xl mx-auto bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md ring-4 ring-purple-100 shrink-0">
+              {currentUser?.photoUrl ? (
+                <img
+                  src={currentUser.photoUrl}
+                  alt={currentUser.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{currentUser?.name.substring(0, 2).toUpperCase() || 'TC'}</span>
+              )}
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">{currentUser?.name}</h3>
-              <p className="text-xs text-purple-700 font-bold">{currentUser?.subject}</p>
-              <p className="font-mono text-xs text-slate-500">Staff ID: {currentUser?.userId}</p>
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">{currentUser?.name}</h3>
+                  <p className="text-xs text-purple-700 font-bold">{currentUser?.subject}</p>
+                </div>
+                {onOpenProfileModal && (
+                  <button
+                    onClick={onOpenProfileModal}
+                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer self-center sm:self-start"
+                  >
+                    <UserCheck className="w-4 h-4" />
+                    <span>Update Profile</span>
+                  </button>
+                )}
+              </div>
+              <p className="font-mono text-xs text-slate-500 mt-1">Staff ID: {currentUser?.userId}</p>
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl space-y-2 text-xs">
+          <div className="p-4 bg-slate-50 rounded-2xl space-y-2 text-xs border border-slate-100">
             <p className="flex justify-between">
               <span className="text-slate-400">Department:</span>
               <span className="font-bold text-slate-800">{currentUser?.department || 'Department of Management Studies'}</span>
+            </p>
+            <p className="flex justify-between">
+              <span className="text-slate-400">Specialization:</span>
+              <span className="font-bold text-purple-700">{currentUser?.subject || 'Management'}</span>
             </p>
             <p className="flex justify-between">
               <span className="text-slate-400">Email:</span>
@@ -995,6 +1043,27 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               <span className="text-slate-400">Role:</span>
               <span className="font-bold text-purple-700 uppercase">Faculty Member</span>
             </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+            {onOpenProfileModal && (
+              <button
+                onClick={onOpenProfileModal}
+                className="w-full sm:w-auto flex-1 py-2.5 px-4 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Update Profile Details</span>
+              </button>
+            )}
+            {onOpenChangePassword && (
+              <button
+                onClick={onOpenChangePassword}
+                className="w-full sm:w-auto flex-1 py-2.5 px-4 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <KeyRound className="w-4 h-4" />
+                <span>Change Password</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -1181,6 +1250,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         message={deleteConfirm.message}
         onConfirm={deleteConfirm.onConfirm}
         onCancel={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Note Preview & Direct Download Modal */}
+      <NotePreviewModal
+        note={previewNote}
+        onClose={() => setPreviewNote(null)}
       />
     </div>
   );
